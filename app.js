@@ -3,20 +3,16 @@
    ========================================================= */
 
 let formularios = [];
+let timeoutAPI = null;
 
 
 /* =========================================================
    ELEMENTOS
    ========================================================= */
 
-const catalogo =
-  document.getElementById("catalogo");
-
-const searchInput =
-  document.getElementById("searchInput");
-
-const clearSearch =
-  document.getElementById("clearSearch");
+const catalogo = document.getElementById("catalogo");
+const searchInput = document.getElementById("searchInput");
+const clearSearch = document.getElementById("clearSearch");
 
 
 /* =========================================================
@@ -25,19 +21,16 @@ const clearSearch =
 
 function escaparHTML(valor) {
 
-  if (
-    valor === null ||
-    valor === undefined
-  ) {
+  if (valor === null || valor === undefined) {
     return "";
   }
 
   return String(valor)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
 
@@ -49,20 +42,16 @@ function urlValida(url) {
 
   try {
 
-    const endereco =
-      new URL(url);
+    const endereco = new URL(url);
 
     return (
       endereco.protocol === "https:" ||
       endereco.protocol === "http:"
     );
 
-  } catch {
-
+  } catch (erro) {
     return false;
-
   }
-
 }
 
 
@@ -94,7 +83,22 @@ function mostrarEstadoVazio(
 
     </div>
   `;
+}
 
+
+/* =========================================================
+   REMOVE SCRIPT JSONP
+   ========================================================= */
+
+function removerScriptJSONP() {
+
+  const antigo = document.getElementById(
+    "script-api-formularios"
+  );
+
+  if (antigo && antigo.parentNode) {
+    antigo.parentNode.removeChild(antigo);
+  }
 }
 
 
@@ -102,57 +106,40 @@ function mostrarEstadoVazio(
    JSONP - RETORNO DO APPS SCRIPT
    ========================================================= */
 
-window.receberFormularios =
-  function (dados) {
+window.receberFormularios = function (dados) {
 
-    removerScriptJSONP();
-
-    if (!Array.isArray(dados)) {
-
-      console.error(
-        "Resposta inválida da API:",
-        dados
-      );
-
-      mostrarEstadoVazio();
-
-      return;
-
-    }
-
-    formularios = dados;
-
-    if (formularios.length === 0) {
-
-      mostrarEstadoVazio();
-
-      return;
-
-    }
-
-    renderizarCatalogo(
-      formularios
-    );
-
-  };
-
-
-/* =========================================================
-   REMOVE SCRIPT JSONP ANTERIOR
-   ========================================================= */
-
-function removerScriptJSONP() {
-
-  const antigo =
-    document.getElementById(
-      "script-api-formularios"
-    );
-
-  if (antigo) {
-    antigo.remove();
+  if (timeoutAPI) {
+    clearTimeout(timeoutAPI);
+    timeoutAPI = null;
   }
 
-}
+  /*
+   * Não removemos o <script> enquanto ele ainda está sendo
+   * executado. O cleanup é feito no próximo ciclo do navegador,
+   * o que melhora a compatibilidade com Safari/WebViews.
+   */
+  setTimeout(removerScriptJSONP, 0);
+
+  if (!Array.isArray(dados)) {
+
+    console.error(
+      "Resposta inválida da API:",
+      dados
+    );
+
+    mostrarEstadoVazio();
+    return;
+  }
+
+  formularios = dados;
+
+  if (formularios.length === 0) {
+    mostrarEstadoVazio();
+    return;
+  }
+
+  renderizarCatalogo(formularios);
+};
 
 
 /* =========================================================
@@ -167,13 +154,10 @@ function carregarFormularios() {
     </div>
   `;
 
-
   if (
     !window.CONFIG ||
-    !CONFIG.API_URL ||
-    CONFIG.API_URL.includes(
-      "COLE_AQUI"
-    )
+    !window.CONFIG.API_URL ||
+    window.CONFIG.API_URL.includes("COLE_AQUI")
   ) {
 
     console.error(
@@ -181,65 +165,66 @@ function carregarFormularios() {
     );
 
     mostrarEstadoVazio();
-
     return;
-
   }
-
 
   removerScriptJSONP();
 
+  const apiUrl = window.CONFIG.API_URL;
 
   const separador =
-    CONFIG.API_URL.includes("?")
+    apiUrl.includes("?")
       ? "&"
       : "?";
 
-
+  /*
+   * O callback é chamado explicitamente em window para evitar
+   * diferenças de resolução de variável global entre navegadores.
+   */
   const url =
-    CONFIG.API_URL +
+    apiUrl +
     separador +
-    "callback=receberFormularios" +
+    "callback=window.receberFormularios" +
     "&t=" +
     Date.now();
 
+  const script = document.createElement("script");
 
-  const script =
-    document.createElement(
-      "script"
+  script.id = "script-api-formularios";
+  script.src = url;
+  script.async = true;
+
+  script.onerror = function () {
+
+    if (timeoutAPI) {
+      clearTimeout(timeoutAPI);
+      timeoutAPI = null;
+    }
+
+    console.error(
+      "Não foi possível carregar a API de formulários."
     );
 
+    removerScriptJSONP();
+    mostrarEstadoVazio();
+  };
 
-  script.id =
-    "script-api-formularios";
+  /*
+   * Evita a tela ficar indefinidamente em 'Carregando' caso
+   * algum navegador/WebView interrompa silenciosamente o JSONP.
+   */
+  timeoutAPI = setTimeout(function () {
 
+    console.error(
+      "Tempo limite ao carregar a API de formulários."
+    );
 
-  script.src =
-    url;
+    removerScriptJSONP();
+    mostrarEstadoVazio();
 
+  }, 12000);
 
-  script.async =
-    true;
-
-
-  script.onerror =
-    function () {
-
-      console.error(
-        "Não foi possível carregar a API de formulários."
-      );
-
-      removerScriptJSONP();
-
-      mostrarEstadoVazio();
-
-    };
-
-
-  document.body.appendChild(
-    script
-  );
-
+  document.body.appendChild(script);
 }
 
 
@@ -250,7 +235,7 @@ function carregarFormularios() {
 function agruparPorCategoria(lista) {
 
   return lista.reduce(
-    (grupos, formulario) => {
+    function (grupos, formulario) {
 
       const categoria =
         String(
@@ -259,22 +244,16 @@ function agruparPorCategoria(lista) {
         ).trim() ||
         "Outros";
 
-
       if (!grupos[categoria]) {
         grupos[categoria] = [];
       }
 
-
-      grupos[categoria]
-        .push(formulario);
-
+      grupos[categoria].push(formulario);
 
       return grupos;
-
     },
     {}
   );
-
 }
 
 
@@ -284,8 +263,8 @@ function agruparPorCategoria(lista) {
 
 function ordenarFormularios(lista) {
 
-  return [...lista].sort(
-    (a, b) => {
+  return lista.slice().sort(
+    function (a, b) {
 
       const ordemA =
         Number(a.ordem) || 999999;
@@ -293,21 +272,17 @@ function ordenarFormularios(lista) {
       const ordemB =
         Number(b.ordem) || 999999;
 
-
       if (ordemA !== ordemB) {
         return ordemA - ordemB;
       }
-
 
       return String(a.nome || "")
         .localeCompare(
           String(b.nome || ""),
           "pt-BR"
         );
-
     }
   );
-
 }
 
 
@@ -317,33 +292,21 @@ function ordenarFormularios(lista) {
 
 function criarCard(formulario) {
 
-  const nome =
-    escaparHTML(
-      formulario.nome ||
-      "Formulário"
-    );
+  const nome = escaparHTML(
+    formulario.nome || "Formulário"
+  );
 
+  const descricao = escaparHTML(
+    formulario.descricao || ""
+  );
 
-  const descricao =
-    escaparHTML(
-      formulario.descricao ||
-      ""
-    );
+  const icone = escaparHTML(
+    formulario.icone || "description"
+  );
 
-
-  const icone =
-    escaparHTML(
-      formulario.icone ||
-      "description"
-    );
-
-
-  const url =
-    String(
-      formulario.url ||
-      ""
-    ).trim();
-
+  const url = String(
+    formulario.url || ""
+  ).trim();
 
   if (!urlValida(url)) {
 
@@ -351,32 +314,19 @@ function criarCard(formulario) {
       <div class="card">
 
         <div class="card-icon">
-
           <span class="material-symbols-outlined">
             ${icone}
           </span>
-
         </div>
 
         <div class="card-content">
-
-          <h3>
-            ${nome}
-          </h3>
-
-          ${
-            descricao
-              ? `<p>${descricao}</p>`
-              : ""
-          }
-
+          <h3>${nome}</h3>
+          ${descricao ? `<p>${descricao}</p>` : ""}
         </div>
 
       </div>
     `;
-
   }
-
 
   return `
     <a
@@ -386,40 +336,24 @@ function criarCard(formulario) {
     >
 
       <div class="card-icon">
-
         <span class="material-symbols-outlined">
           ${icone}
         </span>
-
       </div>
-
 
       <div class="card-content">
-
-        <h3>
-          ${nome}
-        </h3>
-
-        ${
-          descricao
-            ? `<p>${descricao}</p>`
-            : ""
-        }
-
+        <h3>${nome}</h3>
+        ${descricao ? `<p>${descricao}</p>` : ""}
       </div>
 
-
       <div class="card-arrow">
-
         <span class="material-symbols-outlined">
           chevron_right
         </span>
-
       </div>
 
     </a>
   `;
-
 }
 
 
@@ -429,72 +363,46 @@ function criarCard(formulario) {
 
 function renderizarCatalogo(lista) {
 
-  if (
-    !lista ||
-    lista.length === 0
-  ) {
-
+  if (!lista || lista.length === 0) {
     mostrarEstadoVazio();
-
     return;
-
   }
 
+  const grupos = agruparPorCategoria(lista);
 
-  const grupos =
-    agruparPorCategoria(lista);
+  const categorias = Object.keys(grupos)
+    .sort(function (a, b) {
+      return a.localeCompare(b, "pt-BR");
+    });
 
+  const html = categorias
+    .map(function (categoria) {
 
-  const categorias =
-    Object.keys(grupos)
-      .sort(
-        (a, b) =>
-          a.localeCompare(
-            b,
-            "pt-BR"
-          )
+      const itens = ordenarFormularios(
+        grupos[categoria]
       );
 
+      const cards = itens
+        .map(criarCard)
+        .join("");
 
-  const html =
-    categorias
-      .map(
-        categoria => {
+      return `
+        <section class="categoria">
 
-          const itens =
-            ordenarFormularios(
-              grupos[categoria]
-            );
+          <div class="categoria-titulo">
+            ${escaparHTML(categoria)}
+          </div>
 
+          <div class="cards">
+            ${cards}
+          </div>
 
-          const cards =
-            itens
-              .map(criarCard)
-              .join("");
+        </section>
+      `;
+    })
+    .join("");
 
-
-          return `
-            <section class="categoria">
-
-              <div class="categoria-titulo">
-                ${escaparHTML(categoria)}
-              </div>
-
-              <div class="cards">
-                ${cards}
-              </div>
-
-            </section>
-          `;
-
-        }
-      )
-      .join("");
-
-
-  catalogo.innerHTML =
-    html;
-
+  catalogo.innerHTML = html;
 }
 
 
@@ -506,13 +414,9 @@ function normalizarTexto(valor) {
 
   return String(valor || "")
     .normalize("NFD")
-    .replace(
-      /[\u0300-\u036f]/g,
-      ""
-    )
+    .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .trim();
-
 }
 
 
@@ -522,64 +426,44 @@ function normalizarTexto(valor) {
 
 function filtrarFormularios() {
 
-  const termo =
-    normalizarTexto(
-      searchInput.value
-    );
-
+  const termo = normalizarTexto(
+    searchInput.value
+  );
 
   clearSearch.classList.toggle(
     "visible",
     termo.length > 0
   );
 
-
   if (!termo) {
-
-    renderizarCatalogo(
-      formularios
-    );
-
+    renderizarCatalogo(formularios);
     return;
-
   }
 
+  const filtrados = formularios.filter(
+    function (formulario) {
 
-  const filtrados =
-    formularios.filter(
-      formulario => {
+      const nome = normalizarTexto(
+        formulario.nome
+      );
 
-        const nome =
-          normalizarTexto(
-            formulario.nome
-          );
+      const categoria = normalizarTexto(
+        formulario.categoria
+      );
 
+      const descricao = normalizarTexto(
+        formulario.descricao
+      );
 
-        const categoria =
-          normalizarTexto(
-            formulario.categoria
-          );
+      return (
+        nome.includes(termo) ||
+        categoria.includes(termo) ||
+        descricao.includes(termo)
+      );
+    }
+  );
 
-
-        const descricao =
-          normalizarTexto(
-            formulario.descricao
-          );
-
-
-        return (
-          nome.includes(termo) ||
-          categoria.includes(termo) ||
-          descricao.includes(termo)
-        );
-
-      }
-    );
-
-
-  if (
-    filtrados.length === 0
-  ) {
+  if (filtrados.length === 0) {
 
     mostrarEstadoVazio(
       "Nenhum formulário encontrado",
@@ -587,14 +471,9 @@ function filtrarFormularios() {
     );
 
     return;
-
   }
 
-
-  renderizarCatalogo(
-    filtrados
-  );
-
+  renderizarCatalogo(filtrados);
 }
 
 
@@ -609,30 +488,21 @@ function configurarEventos() {
     filtrarFormularios
   );
 
-
   clearSearch.addEventListener(
     "click",
-    () => {
+    function () {
 
-      searchInput.value =
-        "";
-
+      searchInput.value = "";
 
       clearSearch.classList.remove(
         "visible"
       );
 
-
-      renderizarCatalogo(
-        formularios
-      );
-
+      renderizarCatalogo(formularios);
 
       searchInput.focus();
-
     }
   );
-
 }
 
 
@@ -642,11 +512,9 @@ function configurarEventos() {
 
 document.addEventListener(
   "DOMContentLoaded",
-  () => {
+  function () {
 
     configurarEventos();
-
     carregarFormularios();
-
   }
 );
