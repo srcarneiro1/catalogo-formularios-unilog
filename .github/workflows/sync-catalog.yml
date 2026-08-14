@@ -1,0 +1,57 @@
+name: Sincronizar catálogo de atalhos
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/sync-catalog.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-catalog
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+
+    steps:
+      - name: Baixar repositório
+        uses: actions/checkout@v4
+
+      - name: Buscar dados da planilha
+        env:
+          API_URL: "https://script.google.com/macros/s/AKfycbyv2A1g7eDeUYWGA5v-ifRCnH9okVB8v0HV2p3FK-7btvTKjflU_QyyxQMjJe7qp_qtPw/exec"
+        run: |
+          set -euo pipefail
+
+          curl --fail --silent --show-error --location \
+            "${API_URL}?t=$(date +%s)" \
+            --output forms.json.tmp
+
+          jq -e 'type == "array" and length > 0' forms.json.tmp > /dev/null
+          jq -e 'all(.[]; (.nome | type == "string" and length > 0) and (.url | type == "string" and length > 0) and (.ativo == true))' forms.json.tmp > /dev/null
+
+          jq . forms.json.tmp > forms.json
+          rm -f forms.json.tmp
+
+      - name: Publicar somente se houver alteração
+        run: |
+          set -euo pipefail
+
+          if git diff --quiet -- forms.json; then
+            echo "Nenhuma alteração encontrada no catálogo."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add forms.json
+          git commit -m "Atualiza catálogo de atalhos automaticamente"
+          git push
