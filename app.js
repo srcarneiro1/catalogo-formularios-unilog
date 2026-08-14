@@ -1,18 +1,18 @@
 /* =========================================================
    CENTRAL DE FORMULÁRIOS - UNILOG EXPRESS
+   Dados carregados de forms.json no próprio GitHub Pages
    ========================================================= */
 
-let formularios = [];
-let timeoutAPI = null;
+var formularios = [];
 
 
 /* =========================================================
    ELEMENTOS
    ========================================================= */
 
-const catalogo = document.getElementById("catalogo");
-const searchInput = document.getElementById("searchInput");
-const clearSearch = document.getElementById("clearSearch");
+var catalogo = document.getElementById("catalogo");
+var searchInput = document.getElementById("searchInput");
+var clearSearch = document.getElementById("clearSearch");
 
 
 /* =========================================================
@@ -20,7 +20,6 @@ const clearSearch = document.getElementById("clearSearch");
    ========================================================= */
 
 function escaparHTML(valor) {
-
   if (valor === null || valor === undefined) {
     return "";
   }
@@ -39,16 +38,13 @@ function escaparHTML(valor) {
    ========================================================= */
 
 function urlValida(url) {
-
   try {
-
-    const endereco = new URL(url);
+    var endereco = new URL(url);
 
     return (
       endereco.protocol === "https:" ||
       endereco.protocol === "http:"
     );
-
   } catch (erro) {
     return false;
   }
@@ -56,175 +52,102 @@ function urlValida(url) {
 
 
 /* =========================================================
-   ESTADO VAZIO
+   ESTADOS DA INTERFACE
    ========================================================= */
+
+function mostrarCarregando() {
+  catalogo.innerHTML =
+    '<div class="estado">Carregando formulários...</div>';
+}
+
 
 function mostrarEstadoVazio(
-  titulo = "Nenhum formulário cadastrado",
-  descricao = "Os formulários disponíveis serão exibidos aqui."
+  titulo,
+  descricao
 ) {
+  titulo = titulo || "Nenhum formulário cadastrado";
+  descricao = descricao || "Os formulários disponíveis serão exibidos aqui.";
 
-  catalogo.innerHTML = `
-    <div class="estado-vazio">
-
-      <div class="icone-vazio">
-        <span class="material-symbols-outlined">
-          description
-        </span>
-      </div>
-
-      <strong>
-        ${escaparHTML(titulo)}
-      </strong>
-
-      <p>
-        ${escaparHTML(descricao)}
-      </p>
-
-    </div>
-  `;
+  catalogo.innerHTML =
+    '<div class="estado-vazio">' +
+      '<div class="icone-vazio">' +
+        '<span class="material-symbols-outlined">description</span>' +
+      '</div>' +
+      '<strong>' + escaparHTML(titulo) + '</strong>' +
+      '<p>' + escaparHTML(descricao) + '</p>' +
+    '</div>';
 }
 
 
 /* =========================================================
-   REMOVE SCRIPT JSONP
-   ========================================================= */
-
-function removerScriptJSONP() {
-
-  const antigo = document.getElementById(
-    "script-api-formularios"
-  );
-
-  if (antigo && antigo.parentNode) {
-    antigo.parentNode.removeChild(antigo);
-  }
-}
-
-
-/* =========================================================
-   JSONP - RETORNO DO APPS SCRIPT
-   ========================================================= */
-
-window.receberFormularios = function (dados) {
-
-  if (timeoutAPI) {
-    clearTimeout(timeoutAPI);
-    timeoutAPI = null;
-  }
-
-  /*
-   * Não removemos o <script> enquanto ele ainda está sendo
-   * executado. O cleanup é feito no próximo ciclo do navegador,
-   * o que melhora a compatibilidade com Safari/WebViews.
-   */
-  setTimeout(removerScriptJSONP, 0);
-
-  if (!Array.isArray(dados)) {
-
-    console.error(
-      "Resposta inválida da API:",
-      dados
-    );
-
-    mostrarEstadoVazio();
-    return;
-  }
-
-  formularios = dados;
-
-  if (formularios.length === 0) {
-    mostrarEstadoVazio();
-    return;
-  }
-
-  renderizarCatalogo(formularios);
-};
-
-
-/* =========================================================
-   CARREGAR FORMULÁRIOS
+   CARREGAR forms.json
    ========================================================= */
 
 function carregarFormularios() {
-
-  catalogo.innerHTML = `
-    <div class="estado">
-      Carregando formulários...
-    </div>
-  `;
-
-  if (
-    !window.CONFIG ||
-    !window.CONFIG.API_URL ||
-    window.CONFIG.API_URL.includes("COLE_AQUI")
-  ) {
-
-    console.error(
-      "A URL da API não foi configurada."
-    );
-
-    mostrarEstadoVazio();
-    return;
-  }
-
-  removerScriptJSONP();
-
-  const apiUrl = window.CONFIG.API_URL;
-
-  const separador =
-    apiUrl.includes("?")
-      ? "&"
-      : "?";
+  mostrarCarregando();
 
   /*
-   * O callback é chamado explicitamente em window para evitar
-   * diferenças de resolução de variável global entre navegadores.
+   * XMLHttpRequest foi escolhido em vez de fetch para ampliar
+   * a compatibilidade com Safari e WebViews mais antigos.
+   *
+   * O parâmetro t evita o uso de uma versão antiga em cache.
    */
-  const url =
-    apiUrl +
-    separador +
-    "callback=window.receberFormularios" +
-    "&t=" +
-    Date.now();
+  var xhr = new XMLHttpRequest();
+  var url = "forms.json?t=" + new Date().getTime();
 
-  const script = document.createElement("script");
+  xhr.open("GET", url, true);
+  xhr.timeout = 12000;
 
-  script.id = "script-api-formularios";
-  script.src = url;
-  script.async = true;
+  xhr.onreadystatechange = function () {
+    if (xhr.readyState !== 4) {
+      return;
+    }
 
-  script.onerror = function () {
+    if (xhr.status >= 200 && xhr.status < 300) {
+      try {
+        var dados = JSON.parse(xhr.responseText);
 
-    if (timeoutAPI) {
-      clearTimeout(timeoutAPI);
-      timeoutAPI = null;
+        if (!Array.isArray(dados)) {
+          throw new Error("forms.json não contém uma lista válida.");
+        }
+
+        formularios = dados.filter(function (item) {
+          return item && item.ativo !== false;
+        });
+
+        if (formularios.length === 0) {
+          mostrarEstadoVazio();
+          return;
+        }
+
+        renderizarCatalogo(formularios);
+      } catch (erro) {
+        console.error("Erro ao processar forms.json:", erro);
+        mostrarEstadoVazio();
+      }
+
+      return;
     }
 
     console.error(
-      "Não foi possível carregar a API de formulários."
+      "Erro ao carregar forms.json. HTTP:",
+      xhr.status
     );
 
-    removerScriptJSONP();
     mostrarEstadoVazio();
   };
 
-  /*
-   * Evita a tela ficar indefinidamente em 'Carregando' caso
-   * algum navegador/WebView interrompa silenciosamente o JSONP.
-   */
-  timeoutAPI = setTimeout(function () {
-
-    console.error(
-      "Tempo limite ao carregar a API de formulários."
-    );
-
-    removerScriptJSONP();
+  xhr.onerror = function () {
+    console.error("Falha de rede ao carregar forms.json.");
     mostrarEstadoVazio();
+  };
 
-  }, 12000);
+  xhr.ontimeout = function () {
+    console.error("Tempo limite ao carregar forms.json.");
+    mostrarEstadoVazio();
+  };
 
-  document.body.appendChild(script);
+  xhr.send();
 }
 
 
@@ -233,16 +156,11 @@ function carregarFormularios() {
    ========================================================= */
 
 function agruparPorCategoria(lista) {
-
   return lista.reduce(
     function (grupos, formulario) {
-
-      const categoria =
-        String(
-          formulario.categoria ||
-          "Outros"
-        ).trim() ||
-        "Outros";
+      var categoria = String(
+        formulario.categoria || "Outros"
+      ).trim() || "Outros";
 
       if (!grupos[categoria]) {
         grupos[categoria] = [];
@@ -262,25 +180,19 @@ function agruparPorCategoria(lista) {
    ========================================================= */
 
 function ordenarFormularios(lista) {
-
   return lista.slice().sort(
     function (a, b) {
-
-      const ordemA =
-        Number(a.ordem) || 999999;
-
-      const ordemB =
-        Number(b.ordem) || 999999;
+      var ordemA = Number(a.ordem) || 999999;
+      var ordemB = Number(b.ordem) || 999999;
 
       if (ordemA !== ordemB) {
         return ordemA - ordemB;
       }
 
-      return String(a.nome || "")
-        .localeCompare(
-          String(b.nome || ""),
-          "pt-BR"
-        );
+      return String(a.nome || "").localeCompare(
+        String(b.nome || ""),
+        "pt-BR"
+      );
     }
   );
 }
@@ -291,69 +203,50 @@ function ordenarFormularios(lista) {
    ========================================================= */
 
 function criarCard(formulario) {
-
-  const nome = escaparHTML(
+  var nome = escaparHTML(
     formulario.nome || "Formulário"
   );
 
-  const descricao = escaparHTML(
+  var descricao = escaparHTML(
     formulario.descricao || ""
   );
 
-  const icone = escaparHTML(
+  var icone = escaparHTML(
     formulario.icone || "description"
   );
 
-  const url = String(
+  var url = String(
     formulario.url || ""
   ).trim();
 
   if (!urlValida(url)) {
-
-    return `
-      <div class="card">
-
-        <div class="card-icon">
-          <span class="material-symbols-outlined">
-            ${icone}
-          </span>
-        </div>
-
-        <div class="card-content">
-          <h3>${nome}</h3>
-          ${descricao ? `<p>${descricao}</p>` : ""}
-        </div>
-
-      </div>
-    `;
+    return (
+      '<div class="card">' +
+        '<div class="card-icon">' +
+          '<span class="material-symbols-outlined">' + icone + '</span>' +
+        '</div>' +
+        '<div class="card-content">' +
+          '<h3>' + nome + '</h3>' +
+          (descricao ? '<p>' + descricao + '</p>' : '') +
+        '</div>' +
+      '</div>'
+    );
   }
 
-  return `
-    <a
-      class="card"
-      href="${escaparHTML(url)}"
-      rel="noopener noreferrer"
-    >
-
-      <div class="card-icon">
-        <span class="material-symbols-outlined">
-          ${icone}
-        </span>
-      </div>
-
-      <div class="card-content">
-        <h3>${nome}</h3>
-        ${descricao ? `<p>${descricao}</p>` : ""}
-      </div>
-
-      <div class="card-arrow">
-        <span class="material-symbols-outlined">
-          chevron_right
-        </span>
-      </div>
-
-    </a>
-  `;
+  return (
+    '<a class="card" href="' + escaparHTML(url) + '" rel="noopener noreferrer">' +
+      '<div class="card-icon">' +
+        '<span class="material-symbols-outlined">' + icone + '</span>' +
+      '</div>' +
+      '<div class="card-content">' +
+        '<h3>' + nome + '</h3>' +
+        (descricao ? '<p>' + descricao + '</p>' : '') +
+      '</div>' +
+      '<div class="card-arrow">' +
+        '<span class="material-symbols-outlined">chevron_right</span>' +
+      '</div>' +
+    '</a>'
+  );
 }
 
 
@@ -362,43 +255,34 @@ function criarCard(formulario) {
    ========================================================= */
 
 function renderizarCatalogo(lista) {
-
   if (!lista || lista.length === 0) {
     mostrarEstadoVazio();
     return;
   }
 
-  const grupos = agruparPorCategoria(lista);
+  var grupos = agruparPorCategoria(lista);
 
-  const categorias = Object.keys(grupos)
+  var categorias = Object.keys(grupos)
     .sort(function (a, b) {
       return a.localeCompare(b, "pt-BR");
     });
 
-  const html = categorias
+  var html = categorias
     .map(function (categoria) {
-
-      const itens = ordenarFormularios(
+      var itens = ordenarFormularios(
         grupos[categoria]
       );
 
-      const cards = itens
+      var cards = itens
         .map(criarCard)
         .join("");
 
-      return `
-        <section class="categoria">
-
-          <div class="categoria-titulo">
-            ${escaparHTML(categoria)}
-          </div>
-
-          <div class="cards">
-            ${cards}
-          </div>
-
-        </section>
-      `;
+      return (
+        '<section class="categoria">' +
+          '<div class="categoria-titulo">' + escaparHTML(categoria) + '</div>' +
+          '<div class="cards">' + cards + '</div>' +
+        '</section>'
+      );
     })
     .join("");
 
@@ -411,12 +295,15 @@ function renderizarCatalogo(lista) {
    ========================================================= */
 
 function normalizarTexto(valor) {
+  var texto = String(valor || "").toLowerCase().trim();
 
-  return String(valor || "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .trim();
+  if (texto.normalize) {
+    texto = texto
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+  }
+
+  return texto;
 }
 
 
@@ -425,8 +312,7 @@ function normalizarTexto(valor) {
    ========================================================= */
 
 function filtrarFormularios() {
-
-  const termo = normalizarTexto(
+  var termo = normalizarTexto(
     searchInput.value
   );
 
@@ -440,31 +326,29 @@ function filtrarFormularios() {
     return;
   }
 
-  const filtrados = formularios.filter(
+  var filtrados = formularios.filter(
     function (formulario) {
-
-      const nome = normalizarTexto(
+      var nome = normalizarTexto(
         formulario.nome
       );
 
-      const categoria = normalizarTexto(
+      var categoria = normalizarTexto(
         formulario.categoria
       );
 
-      const descricao = normalizarTexto(
+      var descricao = normalizarTexto(
         formulario.descricao
       );
 
       return (
-        nome.includes(termo) ||
-        categoria.includes(termo) ||
-        descricao.includes(termo)
+        nome.indexOf(termo) !== -1 ||
+        categoria.indexOf(termo) !== -1 ||
+        descricao.indexOf(termo) !== -1
       );
     }
   );
 
   if (filtrados.length === 0) {
-
     mostrarEstadoVazio(
       "Nenhum formulário encontrado",
       "Tente pesquisar utilizando outro termo."
@@ -482,7 +366,6 @@ function filtrarFormularios() {
    ========================================================= */
 
 function configurarEventos() {
-
   searchInput.addEventListener(
     "input",
     filtrarFormularios
@@ -491,7 +374,6 @@ function configurarEventos() {
   clearSearch.addEventListener(
     "click",
     function () {
-
       searchInput.value = "";
 
       clearSearch.classList.remove(
@@ -499,7 +381,6 @@ function configurarEventos() {
       );
 
       renderizarCatalogo(formularios);
-
       searchInput.focus();
     }
   );
@@ -513,7 +394,6 @@ function configurarEventos() {
 document.addEventListener(
   "DOMContentLoaded",
   function () {
-
     configurarEventos();
     carregarFormularios();
   }
