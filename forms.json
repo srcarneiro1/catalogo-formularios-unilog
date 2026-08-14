@@ -1,0 +1,22 @@
+[
+  {
+    "id": 1,
+    "nome": "Triagem avarias Amend",
+    "categoria": "Inventário",
+    "descricao": "Triagem de produtos avariados",
+    "url": "https://docs.google.com/forms/d/e/1FAIpQLScED4cwG9gBQFNMAlA0bhcLf8vj1I8Mzfj4wCncMFKCY7Rkkw/viewform?usp=dialog",
+    "icone": "inventory_2",
+    "ativo": true,
+    "ordem": 1
+  },
+  {
+    "id": 2,
+    "nome": "Triagem vendáveis Amend",
+    "categoria": "Inventário",
+    "descricao": "Triagem de produtos bons",
+    "url": "https://docs.google.com/forms/d/e/1FAIpQLSfXjDowRUIzL7CeG4RMjnhBTjGruk2QA4UN86hEzwkebWU-xA/viewform?usp=dialog",
+    "icone": "inventory_2",
+    "ativo": true,
+    "ordem": 2
+  }
+]
