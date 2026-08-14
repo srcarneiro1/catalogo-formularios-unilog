@@ -18,5 +18,145 @@
     "icone": "inventory_2",
     "ativo": true,
     "ordem": 2
+  },
+  {
+    "id": 3,
+    "nome": "Allpick",
+    "categoria": "Sistemas Internos",
+    "descricao": "Acesso ao sistema interno Allpick",
+    "url": "https://allpick.apps.unilog.cloud/login.xhtml",
+    "icone": "apps",
+    "ativo": true,
+    "ordem": 1
+  },
+  {
+    "id": 4,
+    "nome": "Allship",
+    "categoria": "Sistemas Internos",
+    "descricao": "Acesso ao sistema interno Allship",
+    "url": "https://allship.apps.unilog.cloud/login.xhtml",
+    "icone": "local_shipping",
+    "ativo": true,
+    "ordem": 2
+  },
+  {
+    "id": 5,
+    "nome": "Alldoc",
+    "categoria": "Sistemas Internos",
+    "descricao": "Acesso ao sistema interno Alldoc",
+    "url": "https://alldoc.apps.unilog.cloud/login",
+    "icone": "description",
+    "ativo": true,
+    "ordem": 3
+  },
+  {
+    "id": 6,
+    "nome": "BI de Produtividade (TitanBI)",
+    "categoria": "BI / Produtividade",
+    "descricao": "Acesso ao BI de produtividade TitanBI",
+    "url": "https://www.titanbi.com.br/login",
+    "icone": "analytics",
+    "ativo": true,
+    "ordem": 1
+  },
+  {
+    "id": 7,
+    "nome": "Cheio/Vazio – Com auditoria",
+    "categoria": "Cheio/Vazio — Com Auditoria",
+    "descricao": "Formulário Cheio/Vazio com auditoria",
+    "url": "https://docs.google.com/forms/d/e/1FAIpQLSc5hHfdMHkNEylULOCJaEaTVLTHCJAoNy18t9-ot_ZfKZSrIQ/viewform",
+    "icone": "fact_check",
+    "ativo": true,
+    "ordem": 1
+  },
+  {
+    "id": 8,
+    "nome": "Cheio/Vazio – Com Auditoria – Mod 6",
+    "categoria": "Cheio/Vazio — Com Auditoria",
+    "descricao": "Formulário Cheio/Vazio com auditoria – Módulo 6",
+    "url": "https://docs.google.com/forms/d/e/1FAIpQLSfxUhV-x2VDiCvDrepoLH7wDJYAzfl_Cflcq9B2sYE0Fl2BMw/viewform",
+    "icone": "fact_check",
+    "ativo": true,
+    "ordem": 2
+  },
+  {
+    "id": 9,
+    "nome": "Com Auditoria – Mod 4",
+    "categoria": "Auditoria por Módulo",
+    "descricao": "Formulário com auditoria – Módulo 4",
+    "url": "https://forms.gle/T5Bfa2qiUWKYp2cG6",
+    "icone": "checklist",
+    "ativo": true,
+    "ordem": 1
+  },
+  {
+    "id": 10,
+    "nome": "Com Auditoria – Mod 7",
+    "categoria": "Auditoria por Módulo",
+    "descricao": "Formulário com auditoria – Módulo 7",
+    "url": "https://forms.gle/2cj9N99Fk7yCSCDg8",
+    "icone": "checklist",
+    "ativo": true,
+    "ordem": 2
+  },
+  {
+    "id": 11,
+    "nome": "Com Auditoria – Mod 9",
+    "categoria": "Auditoria por Módulo",
+    "descricao": "Formulário com auditoria – Módulo 9",
+    "url": "https://forms.gle/tB1djXhzwdDM3F7M7",
+    "icone": "checklist",
+    "ativo": true,
+    "ordem": 3
+  },
+  {
+    "id": 12,
+    "nome": "Devolução Grupo GoBeauty",
+    "categoria": "Devolução",
+    "descricao": "Formulário de devolução do Grupo GoBeauty",
+    "url": "https://docs.google.com/forms/d/e/1FAIpQLSc9M6OnJwRDTcQJokGvQ7ZO3IBwfv4FGi4Ydd3s2-jKlmw-QA/viewform",
+    "icone": "assignment_return",
+    "ativo": true,
+    "ordem": 1
+  },
+  {
+    "id": 13,
+    "nome": "Devolução Caffeine",
+    "categoria": "Devolução",
+    "descricao": "Formulário de devolução Caffeine",
+    "url": "https://forms.gle/UviPWpXRzwrh43oX9",
+    "icone": "assignment_return",
+    "ativo": true,
+    "ordem": 2
+  },
+  {
+    "id": 14,
+    "nome": "Validação de Produtos",
+    "categoria": "Formulários Operacionais",
+    "descricao": "Validação operacional de produtos",
+    "url": "https://forms.gle/QgXRG1ANF9V5aYTq6",
+    "icone": "verified",
+    "ativo": true,
+    "ordem": 1
+  },
+  {
+    "id": 15,
+    "nome": "Amend organiza pra mim",
+    "categoria": "Formulários Operacionais",
+    "descricao": "Organização de produtos Amend",
+    "url": "https://docs.google.com/forms/d/1YuTOe6a4-gYuWB9W2sOgRlLyN8mwA_EnLapQfRnO_l4/edit?pli=1",
+    "icone": "inventory_2",
+    "ativo": true,
+    "ordem": 2
+  },
+  {
+    "id": 16,
+    "nome": "Mercado Livre",
+    "categoria": "Marketplace",
+    "descricao": "Acesso ao Mercado Livre",
+    "url": "https://l1nk.dev/uhc3fwo",
+    "icone": "storefront",
+    "ativo": true,
+    "ordem": 1
   }
 ]
