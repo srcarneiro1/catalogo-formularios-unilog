@@ -1,12 +1,7 @@
 name: Sincronizar catálogo de atalhos
 
 on:
-  schedule:
-    - cron: "*/10 * * * *"
   workflow_dispatch:
-  push:
-    paths:
-      - ".github/workflows/sync-catalog.yml"
 
 permissions:
   contents: write
@@ -31,17 +26,17 @@ jobs:
           set -euo pipefail
 
           curl --fail --silent --show-error --location \
-            --retry 2 \
-            --retry-delay 2 \
-            --user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/139 Safari/537.36" \
-            --header "Accept: application/json,text/plain,*/*" \
             "${API_URL}?t=$(date +%s)" \
             --output forms.json.tmp
 
+          if grep -qi "accounts.google.com" forms.json.tmp; then
+            echo "ERRO: o Apps Script está exigindo autenticação Google."
+            echo "A implantação precisa permitir acesso anônimo para que o GitHub Actions consiga sincronizar."
+            exit 6
+          fi
+
           if ! jq -e 'type == "array" and length > 0' forms.json.tmp > /dev/null 2>&1; then
-            echo "A API não retornou JSON válido. Primeiros 300 caracteres recebidos:"
-            head -c 300 forms.json.tmp | tr '\n' ' '
-            echo
+            echo "ERRO: a API não retornou um JSON válido."
             exit 5
           fi
 
