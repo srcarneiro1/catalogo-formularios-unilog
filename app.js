@@ -20,12 +20,15 @@ const clearSearch =
 
 
 /* =========================================================
-   SEGURANÇA / TRATAMENTO DE TEXTO
+   SEGURANÇA / TEXTO
    ========================================================= */
 
 function escaparHTML(valor) {
 
-  if (valor === null || valor === undefined) {
+  if (
+    valor === null ||
+    valor === undefined
+  ) {
     return "";
   }
 
@@ -46,7 +49,8 @@ function urlValida(url) {
 
   try {
 
-    const endereco = new URL(url);
+    const endereco =
+      new URL(url);
 
     return (
       endereco.protocol === "https:" ||
@@ -56,6 +60,7 @@ function urlValida(url) {
   } catch {
 
     return false;
+
   }
 
 }
@@ -94,10 +99,67 @@ function mostrarEstadoVazio(
 
 
 /* =========================================================
-   CARREGAMENTO
+   JSONP - RETORNO DO APPS SCRIPT
    ========================================================= */
 
-async function carregarFormularios() {
+window.receberFormularios =
+  function (dados) {
+
+    removerScriptJSONP();
+
+    if (!Array.isArray(dados)) {
+
+      console.error(
+        "Resposta inválida da API:",
+        dados
+      );
+
+      mostrarEstadoVazio();
+
+      return;
+
+    }
+
+    formularios = dados;
+
+    if (formularios.length === 0) {
+
+      mostrarEstadoVazio();
+
+      return;
+
+    }
+
+    renderizarCatalogo(
+      formularios
+    );
+
+  };
+
+
+/* =========================================================
+   REMOVE SCRIPT JSONP ANTERIOR
+   ========================================================= */
+
+function removerScriptJSONP() {
+
+  const antigo =
+    document.getElementById(
+      "script-api-formularios"
+    );
+
+  if (antigo) {
+    antigo.remove();
+  }
+
+}
+
+
+/* =========================================================
+   CARREGAR FORMULÁRIOS
+   ========================================================= */
+
+function carregarFormularios() {
 
   catalogo.innerHTML = `
     <div class="estado">
@@ -105,103 +167,84 @@ async function carregarFormularios() {
     </div>
   `;
 
-  try {
 
-    if (
-      !window.CONFIG ||
-      !CONFIG.API_URL ||
-      CONFIG.API_URL.includes("COLE_AQUI")
-    ) {
+  if (
+    !window.CONFIG ||
+    !CONFIG.API_URL ||
+    CONFIG.API_URL.includes(
+      "COLE_AQUI"
+    )
+  ) {
 
-      throw new Error(
-        "A URL da API ainda não foi configurada em config.js."
+    console.error(
+      "A URL da API não foi configurada."
+    );
+
+    mostrarEstadoVazio();
+
+    return;
+
+  }
+
+
+  removerScriptJSONP();
+
+
+  const separador =
+    CONFIG.API_URL.includes("?")
+      ? "&"
+      : "?";
+
+
+  const url =
+    CONFIG.API_URL +
+    separador +
+    "callback=receberFormularios" +
+    "&t=" +
+    Date.now();
+
+
+  const script =
+    document.createElement(
+      "script"
+    );
+
+
+  script.id =
+    "script-api-formularios";
+
+
+  script.src =
+    url;
+
+
+  script.async =
+    true;
+
+
+  script.onerror =
+    function () {
+
+      console.error(
+        "Não foi possível carregar a API de formulários."
       );
 
-    }
-
-
-    /*
-     * timestamp evita que o navegador utilize uma
-     * resposta antiga armazenada em cache.
-     */
-
-    const separador =
-      CONFIG.API_URL.includes("?")
-        ? "&"
-        : "?";
-
-    const url =
-      `${CONFIG.API_URL}${separador}t=${Date.now()}`;
-
-
-    const response = await fetch(url, {
-      method: "GET",
-      cache: "no-store"
-    });
-
-
-    if (!response.ok) {
-
-      throw new Error(
-        `Erro HTTP ${response.status}`
-      );
-
-    }
-
-
-    const dados = await response.json();
-
-
-    if (!Array.isArray(dados)) {
-
-      throw new Error(
-        "A API não retornou uma lista válida de formulários."
-      );
-
-    }
-
-
-    formularios = dados;
-
-
-    if (formularios.length === 0) {
+      removerScriptJSONP();
 
       mostrarEstadoVazio();
 
-      return;
-    }
+    };
 
 
-    renderizarCatalogo(formularios);
-
-  } catch (error) {
-
-    /*
-     * O usuário do coletor não precisa visualizar
-     * informações técnicas.
-     *
-     * O erro continua disponível no console para
-     * diagnóstico.
-     */
-
-    console.error(
-      "Erro ao carregar formulários:",
-      error
-    );
-
-
-    mostrarEstadoVazio(
-      "Nenhum formulário cadastrado",
-      "Os formulários disponíveis serão exibidos aqui."
-    );
-
-  }
+  document.body.appendChild(
+    script
+  );
 
 }
 
 
 /* =========================================================
-   AGRUPAMENTO
+   AGRUPAR POR CATEGORIA
    ========================================================= */
 
 function agruparPorCategoria(lista) {
@@ -210,18 +253,20 @@ function agruparPorCategoria(lista) {
     (grupos, formulario) => {
 
       const categoria =
-        formulario.categoria?.trim() ||
+        String(
+          formulario.categoria ||
+          "Outros"
+        ).trim() ||
         "Outros";
 
 
       if (!grupos[categoria]) {
-
         grupos[categoria] = [];
-
       }
 
 
-      grupos[categoria].push(formulario);
+      grupos[categoria]
+        .push(formulario);
 
 
       return grupos;
@@ -234,7 +279,7 @@ function agruparPorCategoria(lista) {
 
 
 /* =========================================================
-   ORDENAÇÃO
+   ORDENAR
    ========================================================= */
 
 function ordenarFormularios(lista) {
@@ -250,9 +295,7 @@ function ordenarFormularios(lista) {
 
 
       if (ordemA !== ordemB) {
-
         return ordemA - ordemB;
-
       }
 
 
@@ -269,7 +312,7 @@ function ordenarFormularios(lista) {
 
 
 /* =========================================================
-   CRIAÇÃO DO CARD
+   CARD
    ========================================================= */
 
 function criarCard(formulario) {
@@ -302,11 +345,6 @@ function criarCard(formulario) {
     ).trim();
 
 
-  /*
-   * Caso o endereço seja inválido, não criamos
-   * um link clicável.
-   */
-
   if (!urlValida(url)) {
 
     return `
@@ -319,7 +357,6 @@ function criarCard(formulario) {
           </span>
 
         </div>
-
 
         <div class="card-content">
 
@@ -387,12 +424,15 @@ function criarCard(formulario) {
 
 
 /* =========================================================
-   RENDERIZAÇÃO
+   RENDERIZAR
    ========================================================= */
 
 function renderizarCatalogo(lista) {
 
-  if (!lista || lista.length === 0) {
+  if (
+    !lista ||
+    lista.length === 0
+  ) {
 
     mostrarEstadoVazio();
 
@@ -421,14 +461,14 @@ function renderizarCatalogo(lista) {
       .map(
         categoria => {
 
-          const formulariosDaCategoria =
+          const itens =
             ordenarFormularios(
               grupos[categoria]
             );
 
 
           const cards =
-            formulariosDaCategoria
+            itens
               .map(criarCard)
               .join("");
 
@@ -452,13 +492,14 @@ function renderizarCatalogo(lista) {
       .join("");
 
 
-  catalogo.innerHTML = html;
+  catalogo.innerHTML =
+    html;
 
 }
 
 
 /* =========================================================
-   NORMALIZAÇÃO DE TEXTO
+   NORMALIZAR BUSCA
    ========================================================= */
 
 function normalizarTexto(valor) {
@@ -513,10 +554,12 @@ function filtrarFormularios() {
             formulario.nome
           );
 
+
         const categoria =
           normalizarTexto(
             formulario.categoria
           );
+
 
         const descricao =
           normalizarTexto(
@@ -534,7 +577,9 @@ function filtrarFormularios() {
     );
 
 
-  if (filtrados.length === 0) {
+  if (
+    filtrados.length === 0
+  ) {
 
     mostrarEstadoVazio(
       "Nenhum formulário encontrado",
@@ -569,15 +614,19 @@ function configurarEventos() {
     "click",
     () => {
 
-      searchInput.value = "";
+      searchInput.value =
+        "";
+
 
       clearSearch.classList.remove(
         "visible"
       );
 
+
       renderizarCatalogo(
         formularios
       );
+
 
       searchInput.focus();
 
@@ -588,7 +637,7 @@ function configurarEventos() {
 
 
 /* =========================================================
-   INICIALIZAÇÃO
+   INICIAR
    ========================================================= */
 
 document.addEventListener(
