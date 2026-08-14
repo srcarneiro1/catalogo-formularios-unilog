@@ -1,5 +1,5 @@
 /* =========================================================
-   CENTRAL DE ATALHOS - UNILOG EXPRESS
+   CENTRAL DE FORMULÁRIOS - UNILOG EXPRESS
    Dados carregados de forms.json no próprio GitHub Pages
    ========================================================= */
 
@@ -57,7 +57,7 @@ function urlValida(url) {
 
 function mostrarCarregando() {
   catalogo.innerHTML =
-    '<div class="estado">Carregando atalhos...</div>';
+    '<div class="estado">Carregando formulários...</div>';
 }
 
 
@@ -65,13 +65,13 @@ function mostrarEstadoVazio(
   titulo,
   descricao
 ) {
-  titulo = titulo || "Nenhum atalho cadastrado";
-  descricao = descricao || "Os atalhos disponíveis serão exibidos aqui.";
+  titulo = titulo || "Nenhum formulário cadastrado";
+  descricao = descricao || "Os formulários disponíveis serão exibidos aqui.";
 
   catalogo.innerHTML =
     '<div class="estado-vazio">' +
       '<div class="icone-vazio">' +
-        '<span class="material-symbols-outlined">link</span>' +
+        '<span class="material-symbols-outlined">description</span>' +
       '</div>' +
       '<strong>' + escaparHTML(titulo) + '</strong>' +
       '<p>' + escaparHTML(descricao) + '</p>' +
@@ -198,7 +198,7 @@ function ordenarFormularios(lista) {
 
 function criarCard(formulario) {
   var nome = escaparHTML(
-    formulario.nome || "Atalho"
+    formulario.nome || "Formulário"
   );
 
   var descricao = escaparHTML(
@@ -206,7 +206,7 @@ function criarCard(formulario) {
   );
 
   var icone = escaparHTML(
-    formulario.icone || "link"
+    formulario.icone || "description"
   );
 
   var url = String(
@@ -344,7 +344,7 @@ function filtrarFormularios() {
 
   if (filtrados.length === 0) {
     mostrarEstadoVazio(
-      "Nenhum atalho encontrado",
+      "Nenhum formulário encontrado",
       "Tente pesquisar utilizando outro termo."
     );
 
