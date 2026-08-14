@@ -3,113 +3,311 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Diagnóstico do Catálogo</title>
+  <meta name="theme-color" content="#494a56">
+  <title>Diagnóstico do Catálogo | Unilog Express</title>
+
   <style>
+    :root {
+      --cinza: #494a56;
+      --vermelho: #db0812;
+      --fundo: #f6f7f9;
+      --borda: #dde1e6;
+      --ok: #137333;
+      --aviso: #9a6700;
+      --erro: #b3261e;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
     body {
       margin: 0;
-      padding: 24px;
-      font-family: Arial, sans-serif;
-      background: #f6f7f9;
-      color: #494a56;
+      width: 100%;
+      min-height: 100%;
+      background: var(--fundo);
+      color: var(--cinza);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      min-height: 100dvh;
+      padding: 24px max(16px, env(safe-area-inset-right)) 32px max(16px, env(safe-area-inset-left));
     }
 
     .box {
+      width: 100%;
       max-width: 720px;
       margin: 0 auto;
       background: #fff;
-      border: 1px solid #dde1e6;
-      border-radius: 16px;
-      padding: 20px;
+      border: 1px solid var(--borda);
+      border-radius: 18px;
+      padding: 22px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
     }
 
     h1 {
-      margin-top: 0;
-      font-size: 22px;
+      margin: 0 0 6px;
+      font-size: clamp(24px, 5vw, 34px);
+      line-height: 1.15;
+    }
+
+    .subtitulo {
+      margin: 0 0 18px;
+      color: #747681;
+      font-size: 15px;
+      line-height: 1.45;
     }
 
     .linha {
-      padding: 10px 0;
-      border-bottom: 1px solid #eee;
+      padding: 12px 0;
+      border-bottom: 1px solid #eeeeef;
       word-break: break-word;
+      font-size: 16px;
+      line-height: 1.45;
+    }
+
+    .linha:last-child {
+      border-bottom: 0;
     }
 
     .ok {
-      color: #137333;
+      color: var(--ok);
+      font-weight: 700;
+    }
+
+    .aviso {
+      color: var(--aviso);
       font-weight: 700;
     }
 
     .erro {
-      color: #b3261e;
+      color: var(--erro);
+      font-weight: 700;
+    }
+
+    .resultado-final {
+      margin-top: 18px;
+      padding: 15px 16px;
+      border-radius: 12px;
+      font-weight: 700;
+      line-height: 1.45;
+    }
+
+    .resultado-final.ok {
+      background: #eaf4ec;
+    }
+
+    .resultado-final.erro {
+      background: #fcebea;
+    }
+
+    details {
+      margin-top: 18px;
+    }
+
+    summary {
+      cursor: pointer;
       font-weight: 700;
     }
 
     pre {
+      margin: 12px 0 0;
       white-space: pre-wrap;
       word-break: break-word;
       background: #f3f4f6;
       padding: 12px;
       border-radius: 10px;
       font-size: 12px;
+      line-height: 1.4;
+      overflow: auto;
     }
   </style>
 </head>
+
 <body>
-  <div class="box">
+  <main class="box">
     <h1>Diagnóstico do Catálogo</h1>
+    <p class="subtitulo">
+      Teste da arquitetura atual: GitHub Pages → forms.json → renderização do catálogo.
+    </p>
+
     <div id="status"></div>
-  </div>
+    <div id="final"></div>
+    <div id="detalhes"></div>
+  </main>
 
   <script>
-    var statusEl = document.getElementById("status");
-    var terminou = false;
+    (function () {
+      var statusEl = document.getElementById("status");
+      var finalEl = document.getElementById("final");
+      var detalhesEl = document.getElementById("detalhes");
+      var erros = 0;
+      var avisos = 0;
 
-    function registrar(texto, classe) {
-      var div = document.createElement("div");
-      div.className = "linha" + (classe ? " " + classe : "");
-      div.textContent = texto;
-      statusEl.appendChild(div);
-    }
+      function registrar(texto, classe) {
+        var div = document.createElement("div");
+        div.className = "linha" + (classe ? " " + classe : "");
+        div.textContent = texto;
+        statusEl.appendChild(div);
+      }
 
-    registrar("1. Página de diagnóstico carregada.", "ok");
-    registrar("2. JavaScript local executado.", "ok");
+      function falhar(texto) {
+        erros += 1;
+        registrar(texto, "erro");
+      }
 
-    window.testeJSONP = function (dados) {
-      terminou = true;
+      function avisar(texto) {
+        avisos += 1;
+        registrar(texto, "aviso");
+      }
 
-      registrar("4. Callback JSONP executado.", "ok");
+      function sucesso(texto) {
+        registrar(texto, "ok");
+      }
 
-      if (Array.isArray(dados)) {
-        registrar("5. API retornou " + dados.length + " formulário(s).", "ok");
+      function urlValida(url) {
+        try {
+          var endereco = new URL(String(url || ""));
+          return endereco.protocol === "https:" || endereco.protocol === "http:";
+        } catch (erro) {
+          return false;
+        }
+      }
 
+      function finalizar() {
+        var div = document.createElement("div");
+
+        if (erros === 0) {
+          div.className = "resultado-final ok";
+          div.textContent = avisos === 0
+            ? "CATÁLOGO APTO: todos os testes foram concluídos com sucesso."
+            : "CATÁLOGO APTO: não foram encontrados erros. Há " + avisos + " aviso(s) para revisão.";
+        } else {
+          div.className = "resultado-final erro";
+          div.textContent = "CATÁLOGO COM FALHA: foram encontrados " + erros + " erro(s).";
+        }
+
+        finalEl.innerHTML = "";
+        finalEl.appendChild(div);
+      }
+
+      sucesso("1. GitHub Pages acessível.");
+      sucesso("2. JavaScript local executado.");
+
+      var xhr = new XMLHttpRequest();
+      var url = "forms.json?t=" + new Date().getTime();
+
+      registrar("3. Solicitando forms.json no próprio GitHub Pages...");
+
+      xhr.open("GET", url, true);
+      xhr.timeout = 12000;
+
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState !== 4) {
+          return;
+        }
+
+        if (xhr.status < 200 || xhr.status >= 300) {
+          falhar("4. Não foi possível acessar forms.json. HTTP " + xhr.status + ".");
+          finalizar();
+          return;
+        }
+
+        sucesso("4. forms.json acessível. HTTP " + xhr.status + ".");
+
+        var dados;
+
+        try {
+          dados = JSON.parse(xhr.responseText);
+          sucesso("5. JSON válido.");
+        } catch (erro) {
+          falhar("5. forms.json contém JSON inválido: " + erro.message);
+          finalizar();
+          return;
+        }
+
+        if (!Array.isArray(dados)) {
+          falhar("6. A raiz do forms.json não é uma lista.");
+          finalizar();
+          return;
+        }
+
+        sucesso("6. Estrutura válida: lista com " + dados.length + " registro(s).");
+
+        var ativos = dados.filter(function (item) {
+          return item && item.ativo !== false;
+        });
+
+        if (ativos.length === 0) {
+          avisar("7. Nenhum formulário ativo foi encontrado.");
+        } else {
+          sucesso("7. " + ativos.length + " formulário(s) ativo(s) encontrado(s).");
+        }
+
+        var incompletos = [];
+        var urlsInvalidas = [];
+
+        ativos.forEach(function (item, indice) {
+          var identificador = item && (item.nome || item.id || ("registro " + (indice + 1)));
+
+          if (!item || !String(item.nome || "").trim() || !String(item.url || "").trim()) {
+            incompletos.push(identificador);
+          }
+
+          if (item && item.url && !urlValida(item.url)) {
+            urlsInvalidas.push(identificador);
+          }
+        });
+
+        if (incompletos.length === 0) {
+          sucesso("8. Todos os formulários ativos possuem nome e URL.");
+        } else {
+          falhar("8. Registro(s) incompleto(s): " + incompletos.join(", ") + ".");
+        }
+
+        if (urlsInvalidas.length === 0) {
+          sucesso("9. Todas as URLs dos formulários ativos são válidas.");
+        } else {
+          falhar("9. URL(s) inválida(s): " + urlsInvalidas.join(", ") + ".");
+        }
+
+        var categorias = {};
+        ativos.forEach(function (item) {
+          var categoria = String((item && item.categoria) || "Outros").trim() || "Outros";
+          categorias[categoria] = true;
+        });
+
+        sucesso("10. Catálogo apto para renderização em " + Object.keys(categorias).length + " categoria(s).");
+
+        var details = document.createElement("details");
+        var summary = document.createElement("summary");
         var pre = document.createElement("pre");
+
+        summary.textContent = "Ver dados recebidos";
         pre.textContent = JSON.stringify(dados, null, 2);
-        statusEl.appendChild(pre);
-      } else {
-        registrar("5. A resposta não é uma lista válida.", "erro");
-      }
-    };
 
-    var api = "https://script.google.com/macros/s/AKfycbyv2A1g7eDeUYWGA5v-ifRCnH9okVB8v0HV2p3FK-7btvTKjflU_QyyxQMjJe7qp_qtPw/exec";
-    var src = api + "?callback=testeJSONP&t=" + new Date().getTime();
+        details.appendChild(summary);
+        details.appendChild(pre);
+        detalhesEl.appendChild(details);
 
-    registrar("3. Solicitando JSONP do Apps Script...");
+        finalizar();
+      };
 
-    var script = document.createElement("script");
-    script.src = src;
-    script.async = true;
+      xhr.onerror = function () {
+        falhar("4. O navegador não conseguiu carregar forms.json.");
+        finalizar();
+      };
 
-    script.onerror = function () {
-      terminou = true;
-      registrar("ERRO: o Safari/WebView não conseguiu carregar o Apps Script como script externo.", "erro");
-    };
+      xhr.ontimeout = function () {
+        falhar("4. Tempo limite de 12 segundos ao carregar forms.json.");
+        finalizar();
+      };
 
-    document.body.appendChild(script);
-
-    setTimeout(function () {
-      if (!terminou) {
-        registrar("ERRO: o script externo não chamou o callback em até 12 segundos.", "erro");
-      }
-    }, 12000);
+      xhr.send();
+    })();
   </script>
 </body>
 </html>
