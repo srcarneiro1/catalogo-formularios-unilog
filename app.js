@@ -1,5 +1,5 @@
 /* =========================================================
-   CENTRAL DE FORMULÁRIOS - UNILOG EXPRESS
+   CENTRAL DE ATALHOS - UNILOG EXPRESS
    Dados carregados de forms.json no próprio GitHub Pages
    ========================================================= */
 
@@ -57,7 +57,7 @@ function urlValida(url) {
 
 function mostrarCarregando() {
   catalogo.innerHTML =
-    '<div class="estado">Carregando formulários...</div>';
+    '<div class="estado">Carregando atalhos...</div>';
 }
 
 
@@ -65,13 +65,13 @@ function mostrarEstadoVazio(
   titulo,
   descricao
 ) {
-  titulo = titulo || "Nenhum formulário cadastrado";
-  descricao = descricao || "Os formulários disponíveis serão exibidos aqui.";
+  titulo = titulo || "Nenhum atalho cadastrado";
+  descricao = descricao || "Os atalhos disponíveis serão exibidos aqui.";
 
   catalogo.innerHTML =
     '<div class="estado-vazio">' +
       '<div class="icone-vazio">' +
-        '<span class="material-symbols-outlined">description</span>' +
+        '<span class="material-symbols-outlined">link</span>' +
       '</div>' +
       '<strong>' + escaparHTML(titulo) + '</strong>' +
       '<p>' + escaparHTML(descricao) + '</p>' +
@@ -86,12 +86,6 @@ function mostrarEstadoVazio(
 function carregarFormularios() {
   mostrarCarregando();
 
-  /*
-   * XMLHttpRequest foi escolhido em vez de fetch para ampliar
-   * a compatibilidade com Safari e WebViews mais antigos.
-   *
-   * O parâmetro t evita o uso de uma versão antiga em cache.
-   */
   var xhr = new XMLHttpRequest();
   var url = "forms.json?t=" + new Date().getTime();
 
@@ -204,7 +198,7 @@ function ordenarFormularios(lista) {
 
 function criarCard(formulario) {
   var nome = escaparHTML(
-    formulario.nome || "Formulário"
+    formulario.nome || "Atalho"
   );
 
   var descricao = escaparHTML(
@@ -212,7 +206,7 @@ function criarCard(formulario) {
   );
 
   var icone = escaparHTML(
-    formulario.icone || "description"
+    formulario.icone || "link"
   );
 
   var url = String(
@@ -350,7 +344,7 @@ function filtrarFormularios() {
 
   if (filtrados.length === 0) {
     mostrarEstadoVazio(
-      "Nenhum formulário encontrado",
+      "Nenhum atalho encontrado",
       "Tente pesquisar utilizando outro termo."
     );
 
