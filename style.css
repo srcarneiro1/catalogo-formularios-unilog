@@ -3,37 +3,27 @@
    ========================================================= */
 
 :root {
-
-  /* Cores institucionais */
   --unilog-cinza: #494a56;
   --unilog-vermelho: #db0812;
-
-  /* Cores secundárias */
   --unilog-azul: #accfcc;
   --unilog-castanho: #b8ad9c;
   --unilog-amarelo: #f2d750;
 
-  /* Interface */
   --cor-fundo: #f6f7f9;
   --cor-branco: #ffffff;
-
   --cor-texto: #494a56;
   --cor-texto-secundario: #6b7280;
-
   --cor-borda: #dde1e6;
   --cor-hover: #fff4f4;
 
-  --sombra-leve:
-    0 1px 2px rgba(0, 0, 0, 0.03);
-
+  --sombra-leve: 0 1px 2px rgba(0, 0, 0, 0.03);
   --raio-grande: 18px;
   --raio-medio: 14px;
   --raio-pequeno: 10px;
 }
 
-
 /* =========================================================
-   RESET
+   RESET / BASE
    ========================================================= */
 
 * {
@@ -41,25 +31,26 @@
 }
 
 html {
+  width: 100%;
+  min-height: 100%;
   -webkit-text-size-adjust: 100%;
 }
 
 body {
   margin: 0;
-
+  width: 100%;
   min-height: 100vh;
+  min-height: 100dvh;
 
-  font-family:
-    "Roboto",
-    Verdana,
-    Arial,
-    sans-serif;
-
+  font-family: "Roboto", Verdana, Arial, sans-serif;
   background: var(--cor-fundo);
-
   color: var(--cor-texto);
 }
 
+img,
+svg {
+  max-width: 100%;
+}
 
 /* =========================================================
    APLICAÇÃO
@@ -67,97 +58,68 @@ body {
 
 .app {
   width: 100%;
-
   max-width: 1000px;
+  min-height: 100vh;
+  min-height: 100dvh;
 
   margin: 0 auto;
+  padding: 18px 16px 18px;
 
-  padding: 18px 16px 30px;
+  display: flex;
+  flex-direction: column;
 }
-
 
 /* =========================================================
    CABEÇALHO
    ========================================================= */
 
 .header {
-
   display: flex;
-
   align-items: center;
-
   gap: 18px;
 
   min-height: 120px;
-
   padding: 18px 20px;
 
   background: var(--cor-branco);
-
   border: 1px solid var(--cor-borda);
-
   border-radius: var(--raio-grande);
-
   box-shadow: var(--sombra-leve);
 }
 
-
 .logo-container {
   flex-shrink: 0;
-
   display: flex;
-
   align-items: center;
-
   justify-content: center;
 }
 
-
 .logo {
   display: block;
-
   width: 150px;
-
-  max-width: 100%;
-
   height: auto;
-
   object-fit: contain;
 }
-
 
 .header-text {
   min-width: 0;
 }
 
-
 .header-text h1 {
-
   margin: 0;
-
   font-size: 1.55rem;
-
   line-height: 1.2;
-
   font-weight: 700;
-
   color: var(--unilog-cinza);
 }
 
-
 .header-text p {
-
   margin: 4px 0 0;
-
   font-size: 0.95rem;
-
   line-height: 1.4;
-
   font-weight: 400;
-
   color: var(--cor-texto-secundario);
 }
-
 
 /* =========================================================
    PESQUISA
@@ -167,25 +129,16 @@ body {
   margin-top: 16px;
 }
 
-
 .search-box {
-
   display: flex;
-
   align-items: center;
-
   width: 100%;
-
   min-height: 52px;
-
   padding: 0 14px;
 
   background: var(--cor-branco);
-
   border: 1px solid var(--cor-borda);
-
   border-radius: var(--raio-medio);
-
   box-shadow: var(--sombra-leve);
 
   transition:
@@ -193,186 +146,130 @@ body {
     box-shadow 0.15s ease;
 }
 
-
 .search-box:focus-within {
-
   border-color: var(--unilog-cinza);
-
-  box-shadow:
-    0 0 0 3px rgba(73, 74, 86, 0.08);
+  box-shadow: 0 0 0 3px rgba(73, 74, 86, 0.08);
 }
 
-
 .search-icon {
-
   flex-shrink: 0;
-
   font-size: 25px;
-
   color: var(--unilog-cinza);
 }
 
-
 .search-box input {
-
   flex: 1;
-
   width: 100%;
-
   min-width: 0;
-
   padding: 14px 12px;
 
   border: none;
-
   outline: none;
-
   background: transparent;
 
   color: var(--cor-texto);
-
   font-family: inherit;
-
   font-size: 1rem;
 }
-
 
 .search-box input::placeholder {
   color: #7b7f89;
 }
 
-
 .clear-search {
-
   display: none;
-
   align-items: center;
-
   justify-content: center;
 
   width: 38px;
-
   height: 38px;
-
   padding: 0;
 
   border: none;
-
   border-radius: 50%;
-
   background: transparent;
 
   color: var(--cor-texto-secundario);
-
   cursor: pointer;
 }
-
 
 .clear-search.visible {
   display: flex;
 }
 
-
 .clear-search:hover {
   background: #f0f1f3;
 }
 
-
 .clear-search .material-symbols-outlined {
   font-size: 21px;
 }
-
 
 /* =========================================================
    CATÁLOGO
    ========================================================= */
 
 .catalogo {
-
   display: flex;
-
   flex-direction: column;
-
   gap: 26px;
-
   margin-top: 30px;
+  width: 100%;
 }
-
 
 /* =========================================================
    CATEGORIA
    ========================================================= */
 
 .categoria {
-
   display: flex;
-
   flex-direction: column;
-
   gap: 12px;
+  width: 100%;
 }
 
-
 .categoria-titulo {
-
   display: flex;
-
   align-items: center;
-
   min-height: 30px;
-
   padding-left: 11px;
 
   border-left: 5px solid var(--unilog-vermelho);
-
   color: var(--unilog-cinza);
 
   font-size: 1.08rem;
-
   font-weight: 700;
-
   line-height: 1.25;
 }
-
 
 /* =========================================================
    CARDS
    ========================================================= */
 
 .cards {
-
   display: grid;
-
-  grid-template-columns: 1fr;
-
+  grid-template-columns: minmax(0, 1fr);
   gap: 11px;
+  width: 100%;
 }
 
-
 .card {
-
   display: flex;
-
   align-items: center;
-
   gap: 14px;
 
+  width: 100%;
+  min-width: 0;
   min-height: 78px;
-
   padding: 14px 16px;
 
   background: var(--cor-branco);
-
   border: 1px solid var(--cor-borda);
-
   border-radius: var(--raio-medio);
-
   box-shadow: var(--sombra-leve);
 
   color: inherit;
-
   text-decoration: none;
-
   cursor: pointer;
 
   transition:
@@ -381,316 +278,232 @@ body {
     transform 0.15s ease;
 }
 
-
 .card:hover {
-
   border-color: var(--unilog-vermelho);
-
   background: var(--cor-hover);
 }
-
 
 .card:active {
   transform: scale(0.99);
 }
 
-
-/* Ícone */
-
 .card-icon {
-
   flex-shrink: 0;
-
   display: flex;
-
   align-items: center;
-
   justify-content: center;
 
   width: 50px;
-
   height: 50px;
-
   border-radius: 13px;
 
   background: rgba(219, 8, 18, 0.07);
-
   color: var(--unilog-vermelho);
 }
-
 
 .card-icon .material-symbols-outlined {
   font-size: 29px;
 }
 
-
-/* Conteúdo */
-
 .card-content {
-
   flex: 1;
-
   min-width: 0;
+  overflow-wrap: anywhere;
 }
 
-
 .card-content h3 {
-
   margin: 0;
-
   color: var(--unilog-cinza);
-
   font-size: 1rem;
-
   font-weight: 700;
-
   line-height: 1.3;
 }
 
-
 .card-content p {
-
   margin: 4px 0 0;
-
   color: var(--cor-texto-secundario);
-
   font-size: 0.89rem;
-
   line-height: 1.35;
 }
 
-
-/* Seta */
-
 .card-arrow {
-
   flex-shrink: 0;
-
   display: flex;
-
   align-items: center;
-
   justify-content: center;
-
   color: #a1a4aa;
 }
-
 
 .card-arrow .material-symbols-outlined {
   font-size: 22px;
 }
-
 
 /* =========================================================
    ESTADOS
    ========================================================= */
 
 .estado {
-
   display: flex;
-
   align-items: center;
-
   justify-content: center;
 
   min-height: 100px;
-
   padding: 24px;
 
   text-align: center;
-
   color: var(--cor-texto-secundario);
-
   font-size: 0.95rem;
 }
 
-
-/* Estado vazio */
-
 .estado-vazio {
-
   display: flex;
-
   flex-direction: column;
-
   align-items: center;
-
   justify-content: center;
-
   gap: 7px;
 
   min-height: 180px;
-
   padding: 38px 20px;
-
   text-align: center;
 }
 
-
 .estado-vazio .icone-vazio {
-
   display: flex;
-
   align-items: center;
-
   justify-content: center;
 
   width: 58px;
-
   height: 58px;
-
   margin-bottom: 4px;
 
   border-radius: 50%;
-
   background: rgba(73, 74, 86, 0.06);
-
   color: var(--unilog-cinza);
 }
-
 
 .estado-vazio .icone-vazio .material-symbols-outlined {
   font-size: 31px;
 }
 
-
 .estado-vazio strong {
-
   color: var(--unilog-cinza);
-
   font-size: 1rem;
-
   font-weight: 700;
 }
 
-
 .estado-vazio p {
-
   max-width: 400px;
-
   margin: 0;
-
   color: var(--cor-texto-secundario);
-
   font-size: 0.9rem;
-
   line-height: 1.4;
 }
-
 
 /* =========================================================
    RODAPÉ
    ========================================================= */
 
 .footer {
-
-  margin-top: 40px;
-
-  padding: 16px;
+  margin-top: auto;
+  padding: 28px 16px 4px;
 
   text-align: center;
-
   color: #a2a5ab;
-
   font-size: 0.72rem;
-
   font-weight: 500;
-
   letter-spacing: 0.08em;
 }
-
 
 /* =========================================================
    RESPONSIVIDADE
    ========================================================= */
 
 @media (min-width: 700px) {
-
   .cards {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-
 }
 
-
 @media (max-width: 600px) {
-
   .app {
-    padding: 12px 12px 24px;
+    padding:
+      max(12px, env(safe-area-inset-top))
+      max(12px, env(safe-area-inset-right))
+      max(16px, env(safe-area-inset-bottom))
+      max(12px, env(safe-area-inset-left));
   }
-
 
   .header {
-
     min-height: 105px;
-
     gap: 12px;
-
     padding: 15px;
   }
-
 
   .logo {
     width: 135px;
   }
 
-
   .header-text h1 {
     font-size: 1.27rem;
   }
-
 
   .header-text p {
     font-size: 0.85rem;
   }
 
-
   .search-section {
     margin-top: 12px;
   }
-
 
   .catalogo {
     margin-top: 24px;
   }
 
-
   .card {
     min-height: 76px;
-
     padding: 13px;
   }
 
+  .footer {
+    padding-top: 24px;
+  }
 }
 
-
 @media (max-width: 420px) {
-
   .header {
-    align-items: center;
+    gap: 10px;
+    padding: 13px;
   }
-
 
   .logo {
-    width: 115px;
+    width: 110px;
   }
-
 
   .header-text h1 {
-    font-size: 1.12rem;
+    font-size: 1.08rem;
   }
-
 
   .header-text p {
-    font-size: 0.8rem;
+    font-size: 0.78rem;
   }
 
-
   .card-icon {
-
     width: 46px;
-
     height: 46px;
   }
 
+  .card {
+    gap: 11px;
+  }
+}
+
+@media (max-width: 350px) {
+  .header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .logo {
+    width: 120px;
+  }
 }
